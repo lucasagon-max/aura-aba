@@ -8,13 +8,16 @@ export async function createPatient(formData: FormData) {
   const supabase = await createClient();
 
   // 1. Pegar o clinic_id do usuário logado
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('clinic_id')
     .single();
 
+  console.log('DEBUG - Profile:', profile);
+  console.log('DEBUG - Error:', profileError);
+
   if (!profile?.clinic_id) {
-    return { error: 'Clínica não encontrada.' };
+    return { error: `Clínica não encontrada. (Status: ${profileError?.message || 'Perfil sem ID de clínica'})` };
   }
 
   const name = formData.get('name') as string;

@@ -17,6 +17,10 @@ CREATE POLICY "Users can view their own clinic" ON clinics
 FOR SELECT USING (id = get_user_clinic_id());
 
 -- Profiles: Usuário vê apenas colegas da mesma clínica
+DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
+CREATE POLICY "Users can view own profile" ON profiles
+FOR SELECT USING (id = auth.uid());
+
 DROP POLICY IF EXISTS "Users can view clinic profiles" ON profiles;
 CREATE POLICY "Users can view clinic profiles" ON profiles
 FOR SELECT USING (clinic_id = get_user_clinic_id());
