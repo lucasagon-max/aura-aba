@@ -14,16 +14,20 @@ export async function createPatient(formData: FormData) {
     return { error: 'Usuário não autenticado.' };
   }
 
-  // 2. Pegar o clinic_id do usuário logado filtrando pelo ID dele
-  const { data: profile, error: profileError } = await supabase
+  console.log('DEBUG - User ID:', user.id);
+
+  // 2. Pegar o clinic_id de forma robusta
+  const { data: profiles, error: profileError } = await supabase
     .from('profiles')
     .select('clinic_id')
     .eq('id', user.id)
-    .single();
+    .limit(1);
+
+  const profile = profiles?.[0];
 
   if (profileError || !profile?.clinic_id) {
     console.error('DEBUG - Profile Error:', profileError);
-    return { error: `Clínica não encontrada. (Status: ${profileError?.message || 'Perfil sem ID de clínica'})` };
+    return { error: `Clínica não encontrada. (Status: ${profileError?.message || 'Perfil não localizado no banco'})` };
   }
 
   const name = formData.get('name') as string;

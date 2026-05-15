@@ -11,13 +11,16 @@ export async function saveAnamnese(patientId: string, sections: any) {
   if (!user) return { error: 'Usuário não autenticado.' };
 
   // 2. Buscar o perfil para obter o clinic_id
-  const { data: profile } = await supabase
+  const { data: profiles, error: profileError } = await supabase
     .from('profiles')
     .select('clinic_id')
     .eq('id', user.id)
-    .single();
+    .limit(1);
+
+  const profile = profiles?.[0];
 
   if (!profile?.clinic_id) {
+    console.error('DEBUG - Profile Error:', profileError);
     return { error: 'Clínica não encontrada para o usuário.' };
   }
 
