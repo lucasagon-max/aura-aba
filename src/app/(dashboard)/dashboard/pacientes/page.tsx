@@ -28,10 +28,13 @@ export default async function PatientsPage() {
           <h2 className="text-2xl font-bold text-slate-900">Meus Pacientes</h2>
           <p className="text-slate-500">Gerencie os prontuários e históricos dos seus pacientes.</p>
         </div>
-        <button className="inline-flex items-center gap-2 bg-sky-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-sky-600 transition-all shadow-lg shadow-sky-200 active:scale-95">
+        <Link 
+          href="/dashboard/pacientes/novo"
+          className="inline-flex items-center gap-2 bg-sky-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-sky-600 transition-all shadow-lg shadow-sky-200 active:scale-95"
+        >
           <Plus className="h-5 w-5" />
           Novo Paciente
-        </button>
+        </Link>
       </div>
 
       {/* Filtros e Busca */}
@@ -84,7 +87,7 @@ export default async function PatientsPage() {
                   </td>
                   <td className="px-6 py-4 text-sm text-slate-600">{patient.school || '-'}</td>
                   <td className="px-6 py-4 text-right">
-                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex justify-end gap-2 transition-opacity">
                       <Link 
                         href={`/dashboard/pacientes/${patient.id}/anamnese`}
                         className="p-2 text-slate-400 hover:text-sky-500 hover:bg-sky-50 rounded-lg transition-all" 

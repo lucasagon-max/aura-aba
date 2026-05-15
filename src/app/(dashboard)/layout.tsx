@@ -20,6 +20,7 @@ export default function DashboardLayout({
     { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
     { icon: Users, label: "Pacientes", href: "/dashboard/pacientes" },
     { icon: Clock, label: "Sessões ABA", href: "/dashboard/sessoes" },
+    { icon: BarChart3, label: "Registros ABC", href: "/dashboard/abc" },
     { icon: Target, label: "Metas PEI", href: "/dashboard/metas" },
     { icon: BarChart3, label: "Relatórios", href: "/dashboard/relatorios" },
     { icon: Settings, label: "Configurações", href: "/dashboard/config" },
