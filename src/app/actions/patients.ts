@@ -7,16 +7,22 @@ import { redirect } from "next/navigation";
 export async function createPatient(formData: FormData) {
   const supabase = await createClient();
 
-  // 1. Pegar o clinic_id do usuário logado
+  // 1. Obter o usuário logado
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    return { error: 'Usuário não autenticado.' };
+  }
+
+  // 2. Pegar o clinic_id do usuário logado filtrando pelo ID dele
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('clinic_id')
+    .eq('id', user.id)
     .single();
 
-  console.log('DEBUG - Profile:', profile);
-  console.log('DEBUG - Error:', profileError);
-
-  if (!profile?.clinic_id) {
+  if (profileError || !profile?.clinic_id) {
+    console.error('DEBUG - Profile Error:', profileError);
     return { error: `Clínica não encontrada. (Status: ${profileError?.message || 'Perfil sem ID de clínica'})` };
   }
 
