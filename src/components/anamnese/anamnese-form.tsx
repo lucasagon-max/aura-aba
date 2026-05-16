@@ -11,6 +11,7 @@ import {
   Home,
   Save
 } from "lucide-react";
+import { useState } from "react";
 
 interface AnamneseFormProps {
   initialData: any;
@@ -19,13 +20,19 @@ interface AnamneseFormProps {
 }
 
 export function AnamneseForm({ initialData, onSubmit, isPublic = false }: AnamneseFormProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const sections = initialData || {};
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const data = Object.fromEntries(formData.entries());
-    await onSubmit(data);
+    setIsSubmitting(true);
+    try {
+      const formData = new FormData(e.currentTarget);
+      const data = Object.fromEntries(formData.entries());
+      await onSubmit(data);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -157,8 +164,28 @@ export function AnamneseForm({ initialData, onSubmit, isPublic = false }: Anamne
 
       {/* 8. Família e Queixa */}
       <FormSection title="8. Contexto Familiar e Queixa" icon={<Home className="text-slate-600" />}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <FormSelect label="Histórico Familiar (Autismo/TDAH)?" name="fam_history" defaultValue={sections.fam_history} options={['Sim', 'Não']} />
+        <div className="space-y-6 mb-6">
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-slate-600">Histórico Familiar de Condições Genéticas ou Neurológicas</label>
+            <p className="text-xs text-slate-500 mb-2">Marque todas as opções aplicáveis para parentes de primeiro ou segundo grau (pais, irmãos, tios, avós).</p>
+            <div className="flex flex-wrap gap-4">
+              {['Autismo (TEA)', 'TDAH', 'Atraso de Desenvolvimento', 'Esquizofrenia', 'Epilepsia', 'Nenhum Histórico'].map(hist => {
+                const nameKey = `fam_hist_${hist.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+                return (
+                  <label key={hist} className="flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors">
+                    <input type="checkbox" name={nameKey} defaultChecked={sections[nameKey] === 'on'} className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" />
+                    <span className="text-sm text-slate-700">{hist}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+          <FormTextArea 
+            label="Detalhes do Histórico Familiar" 
+            name="fam_history_notes" 
+            defaultValue={sections.fam_history_notes} 
+            placeholder="Se marcou alguma condição acima, especifique o grau de parentesco ou outras condições genéticas/neurológicas relevantes..." 
+          />
         </div>
         <div className="space-y-4">
           <FormTextArea 
@@ -173,8 +200,13 @@ export function AnamneseForm({ initialData, onSubmit, isPublic = false }: Anamne
       {/* Ações Fixas */}
       <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-slate-200 p-4 z-20">
         <div className="max-w-5xl mx-auto flex justify-end">
-          <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-10 rounded-xl transition-all shadow-lg shadow-indigo-200 flex items-center gap-2 active:scale-95 w-full md:w-auto justify-center">
-            <Save size={18} /> {isPublic ? 'Enviar Anamnese' : 'Salvar Prontuário'}
+          <button disabled={isSubmitting} type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-10 rounded-xl transition-all shadow-lg shadow-indigo-200 flex items-center gap-2 active:scale-95 w-full md:w-auto justify-center disabled:opacity-70 disabled:cursor-not-allowed">
+            {isSubmitting ? (
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Save size={18} />
+            )}
+            {isSubmitting ? 'Enviando...' : (isPublic ? 'Enviar Anamnese' : 'Salvar Prontuário')}
           </button>
         </div>
       </div>
@@ -195,12 +227,15 @@ function FormSection({ title, icon, children }: { title: string, icon: React.Rea
 }
 
 function FormSelect({ label, name, options, defaultValue }: { label: string, name: string, options: string[], defaultValue?: any }) {
+  const [value, setValue] = useState(defaultValue || "");
+
   return (
     <div className="space-y-2">
       <label className="text-sm font-semibold text-slate-600">{label}</label>
       <select 
         name={name}
-        defaultValue={defaultValue || ""}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
         className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all bg-slate-50/50 text-slate-700 font-medium"
       >
         <option value="" disabled>Selecione...</option>
@@ -208,6 +243,17 @@ function FormSelect({ label, name, options, defaultValue }: { label: string, nam
           <option key={opt} value={opt.toLowerCase().replace(/ /g, '_')}>{opt}</option>
         ))}
       </select>
+      {value.includes('outro') && (
+        <div className="pt-2 animate-in fade-in slide-in-from-top-2">
+          <input 
+            type="text" 
+            name={`${name}_other_details`} 
+            placeholder="Por favor, especifique..."
+            className="w-full p-3 rounded-xl border border-indigo-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all bg-white text-slate-700 text-sm"
+            required
+          />
+        </div>
+      )}
     </div>
   );
 }
